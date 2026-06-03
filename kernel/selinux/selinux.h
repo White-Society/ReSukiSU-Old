@@ -57,6 +57,4 @@ void escape_to_root_for_adb_root();
 
 extern u32 ksu_file_sid;
 
-void __init ksu_selinux_init();
-
 #endif

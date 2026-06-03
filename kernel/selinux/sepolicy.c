@@ -1086,7 +1086,9 @@ void ksu_destroy_policydb(struct policydb *db)
 }
 
 // handle backport
-extern rwlock_t *ksu_policy_rwlock_ptr;
+#ifdef KSU_COMPAT_HAS_EXPORTED_POLICY_RWLOCK
+extern rwlock_t policy_rwlock;
+#endif
 
 static inline void ksu_lock_sepolicy_legacy(void)
 {
@@ -1094,9 +1096,12 @@ static inline void ksu_lock_sepolicy_legacy(void)
 // 4.14 - 5.10
 #if defined(KSU_COMPAT_USE_SELINUX_STATE)
     read_lock(&selinux_state.ss->policy_rwlock);
-// 4.14-
+// 4.14- with manual export rwlock
+#elif defined(KSU_COMPAT_HAS_EXPORTED_POLICY_RWLOCK)
+    read_lock(&policy_rwlock);
+// 4.14- mostly
 #else
-    read_lock(ksu_policy_rwlock_ptr);
+    // do nothing
 #endif
 #endif
 }
@@ -1107,9 +1112,12 @@ static inline void ksu_unlock_sepolicy_legacy(void)
 // 4.14 - 5.10
 #if defined(KSU_COMPAT_USE_SELINUX_STATE)
     read_unlock(&selinux_state.ss->policy_rwlock);
-// 4.14-
+// 4.14- with manual export rwlock
+#elif defined(KSU_COMPAT_HAS_EXPORTED_POLICY_RWLOCK)
+    read_unlock(&policy_rwlock);
+// 4.14- mostly
 #else
-    read_unlock(ksu_policy_rwlock_ptr);
+    // do nothing
 #endif
 #endif
 }
@@ -1178,13 +1186,13 @@ int ksu_dup_policydb(struct policydb *old_db, struct policydb *new_db)
 
     new_db->len = old_db->len;
 
-    vfree(data);
+    kvfree(data);
     ret = len;
 
     return ret;
 
 out_free_data:
-    vfree(data);
+    kvfree(data);
     return ret;
 }
 
