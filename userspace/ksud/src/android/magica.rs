@@ -1,12 +1,11 @@
-use std::{
-    net::{IpAddr, Ipv4Addr, SocketAddr},
-    process::Command,
-};
-
-use adb_client::{ADBDeviceExt, tcp::ADBTcpDevice};
+use adb_client::ADBDeviceExt;
+use adb_client::tcp::ADBTcpDevice;
 use anyhow::{Context, Result, bail};
 use log::{error, info};
-use prop_rs_android::{resetprop::ResetProp, sys_prop};
+use prop_rs_android::resetprop::ResetProp;
+use prop_rs_android::sys_prop;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::process::Command;
 
 const fn resetprop() -> ResetProp {
     ResetProp {
